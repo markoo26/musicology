@@ -61,13 +61,15 @@ def get_model_response(state: State, model_provider, current_time, models) -> di
 
     # Generate timestamp and filename and model_outputs folder if not present
 
-    output_dir = Path(__file__) / "model_outputs"
-    output_dir.mkdir(parents=True, exist_ok=True)
+    output_dir = Path(__file__).parent / "model_outputs" / current_time
 
-    filename = f"model_outputs/{model_provider}_response_{current_time}.json"
+    output_dir.mkdir(exist_ok=True)
+
+    filename = Path(__file__).parent / f"model_outputs/{current_time}/{model_provider}_response.json"
 
     # Dump response to JSON file
     response_dict = response.model_dump()
+
     with open(filename, 'w', encoding='utf-8') as f:
         json.dump(response_dict, f, indent=2, ensure_ascii=False)
 
@@ -79,7 +81,7 @@ def get_model_response(state: State, model_provider, current_time, models) -> di
     return {f"{model_provider}_response": response.model_dump()}
 
 
-# Node 2: Combine responses and route to Google
+# Node 2: Combine responses
 def analyze_responses(state: State, current_time: str) -> dict:
     """Prepare context for Google to analyze"""
     recommendations_df = pd.DataFrame()
@@ -92,7 +94,7 @@ def analyze_responses(state: State, current_time: str) -> dict:
     final_recommendations_df.columns = ['song_title', 'artist', 'album', 'year', 'total_points']
     final_recommendations_df = final_recommendations_df.sort_values(by='total_points', ascending=False)
 
-    final_recommendations_df.to_csv(f'model_outputs/final_recommendations_df_{current_time}.csv')
+    final_recommendations_df.to_csv(f'model_outputs/{current_time}/final_recommendations_df_{current_time}.csv')
 
     # Create YouTube playlist
 
