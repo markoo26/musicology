@@ -1,0 +1,25 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+oauth.txt
+
+# Virtual environments
+.venv
+
+# YouTube API credentials
+client_secrets.json
+token.pickle
+
+# Responses
+model_outputs/
+
+# Environment variables
+.env
+
+# Graph
+langgraph_workflow.png
+uv.lock
