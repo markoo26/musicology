@@ -1,5 +1,5 @@
 from dotenv import load_dotenv
-from typing import Annotated, Literal, Dict
+from typing import Annotated, Dict
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
 from langchain_core.messages import HumanMessage, SystemMessage
@@ -7,14 +7,17 @@ from langchain.chat_models import init_chat_model
 from typing_extensions import TypedDict
 import logging
 from functools import partial
-from app_messages import welcome_screen
-from utils import generate_graph_image, load_config, validate_apikeys, validate_user_input, create_playlist_name
-from prompts import RECOMMENDATION_PROMPT
-from schemas import MusicRecommendation, RecommendationResponse
+from src.app_messages import welcome_screen
+from src.utils import generate_graph_image, load_config, validate_apikeys, validate_user_input, create_playlist_name
+from src.prompts import RECOMMENDATION_PROMPT
+from src.schemas import RecommendationResponse
 import pandas as pd
-from youtube_integration import YouTubePlaylistCreator
+from src.youtube_integration import YouTubePlaylistCreator
 import json
 from datetime import datetime
+
+from pathlib import Path
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -23,7 +26,7 @@ logging.basicConfig(
 
 TEMPERATURE = 0.8
 load_dotenv()
-validate_apikeys()
+# validate_apikeys()
 
 
 # Define the state
@@ -56,8 +59,11 @@ def get_model_response(state: State, model_provider, current_time, models) -> di
 
     response = structured_llm.invoke(messages)
 
-    # Generate timestamp and filename
-    # TODO: mkdir(exist_ok) for model_outputs
+    # Generate timestamp and filename and model_outputs folder if not present
+
+    output_dir = Path(__file__) / "model_outputs"
+    output_dir.mkdir(parents=True, exist_ok=True)
+
     filename = f"model_outputs/{model_provider}_response_{current_time}.json"
 
     # Dump response to JSON file

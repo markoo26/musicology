@@ -14,5 +14,6 @@ dependencies = [
     "langchain[anthropic,openai]>=1.2.4",
     "langgraph>=1.0.6",
     "pandas>=2.3.3",
+    "pathlib>=1.0.1",
     "python-dotenv>=1.2.1",
 ]
