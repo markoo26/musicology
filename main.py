@@ -26,7 +26,7 @@ logging.basicConfig(
 
 TEMPERATURE = 0.8
 load_dotenv()
-# validate_apikeys()
+validate_apikeys()
 
 
 # Define the state
