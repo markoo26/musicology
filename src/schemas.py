@@ -1,6 +1,9 @@
+from typing import Annotated, Dict
 from typing import List
 
+from langgraph.graph.message import add_messages
 from pydantic import BaseModel, Field
+from typing_extensions import TypedDict
 
 
 class MusicRecommendation(BaseModel):
@@ -16,3 +19,13 @@ class RecommendationResponse(BaseModel):
     recommendations: List[MusicRecommendation] = Field(
         description="List of exactly 10 music recommendations, ranked from strongest (10) to weakest (1)"
     )
+
+
+class State(TypedDict):
+    messages: Annotated[list, add_messages]
+    user_question: str
+    anthropic_response: str
+    openai_response: str
+    google_response: str
+    final_answer: str
+    prompt_attributes: Dict[str, str]

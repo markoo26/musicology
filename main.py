@@ -3,48 +3,39 @@ import logging
 from datetime import datetime
 from functools import partial
 from pathlib import Path
-from typing import Annotated, Dict
 
 import pandas as pd
 from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
+from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.tools import Tool
 from langgraph.graph import StateGraph, START, END
-from langgraph.graph.message import add_messages
-from typing_extensions import TypedDict
 
 from src.app_messages import welcome_screen
 from src.prompts import RECOMMENDATION_PROMPT
-from src.schemas import RecommendationResponse
+from src.schemas import RecommendationResponse, State
 from src.utils import generate_graph_image, load_config, validate_apikeys, validate_user_input, create_playlist_name
 from src.youtube_integration import YouTubePlaylistCreator
+
+# Setup stuff
 
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
-TEMPERATURE = 0.8
+
 load_dotenv()
 validate_apikeys()
 
 
-# Define the state
-class State(TypedDict):
-    messages: Annotated[list, add_messages]
-    user_question: str
-    anthropic_response: str
-    openai_response: str
-    google_response: str
-    final_answer: str
-    prompt_attributes: Dict[str, str]
-
-
 # Get response from any model
-def get_model_response(state: State, model_provider, current_time, models) -> dict:
+def get_model_response(state: State, model_provider, current_time, models, script_config) -> dict:
     """Get response with same System Message to specific Human Message for given Model Provider"""
+
     messages = [
-        SystemMessage(content=RECOMMENDATION_PROMPT),
+        SystemMessage(content=RECOMMENDATION_PROMPT.format(NO_OF_SONGS = script_config['NO_OF_SONGS'])),
         HumanMessage(content=state["user_question"])
     ]
 
@@ -58,6 +49,15 @@ def get_model_response(state: State, model_provider, current_time, models) -> di
         structured_llm = models[model_provider].with_structured_output(RecommendationResponse)
 
     response = structured_llm.invoke(messages)
+    #TODO: Fix this guy
+    tool_calls = response.additional_kwargs.get("tool_calls", [])
+
+    if tool_calls:
+        print("✅ Search tool was used")
+        for call in tool_calls:
+            print(call["name"], call["args"])
+    else:
+        print("❌ Search tool was NOT used")
 
     # Generate timestamp and filename and model_outputs folder if not present
 
@@ -113,16 +113,16 @@ def analyze_responses(state: State, current_time: str) -> dict:
 
 
 # Build the graph
-def build_graph(MODELS):
+def build_graph(MODELS, CONFIG):
     workflow = StateGraph(State)
 
     # Setup timestamp to use it to align on same artifacts for single run
     current_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
 
     # Add nodes
-    workflow.add_node("anthropic", partial(get_model_response, model_provider="anthropic", current_time=current_time, models=MODELS))
-    workflow.add_node("openai", partial(get_model_response, model_provider="openai", current_time=current_time, models=MODELS))
-    workflow.add_node("google", partial(get_model_response, model_provider="google", current_time=current_time, models=MODELS))
+    workflow.add_node("anthropic", partial(get_model_response, model_provider="anthropic", current_time=current_time, models=MODELS, script_config=CONFIG))
+    workflow.add_node("openai", partial(get_model_response, model_provider="openai", current_time=current_time, models=MODELS, script_config=CONFIG))
+    workflow.add_node("google", partial(get_model_response, model_provider="google", current_time=current_time, models=MODELS, script_config=CONFIG))
     workflow.add_node("analyze", partial(analyze_responses, current_time=current_time))
 
     # Add edges - all models run from START
@@ -146,14 +146,30 @@ def main():
 
     welcome_screen(CONFIG['NO_OF_SONGS'])
 
+    # Build tools
+
+    search_tool = DuckDuckGoSearchRun()
+
+    tools = [
+        Tool(
+            name="web_search",
+            description="Search the web for real, existing songs and artists",
+            func=search_tool.run,
+        )
+    ]
+
     # Initialize models
     llm_anthropic = init_chat_model(model="anthropic:claude-haiku-4-5-20251001", temperature=CONFIG["TEMPERATURE"])
     llm_openai = init_chat_model(model="openai:gpt-4o", temperature=CONFIG["TEMPERATURE"])
     llm_google = init_chat_model(model="google_genai:gemini-pro-latest", temperature=CONFIG["TEMPERATURE"])
 
+    llm_openai.bind_tools(tools, tool_choice="web_search")
+    llm_anthropic.bind_tools(tools, tool_choice="web_search")
+    llm_google.bind_tools(tools, tool_choice="web_search")
+
     MODELS = {'anthropic': llm_anthropic, 'openai': llm_openai, 'google': llm_google}
 
-    app = build_graph(MODELS)
+    app = build_graph(MODELS, CONFIG)
     generate_graph_image(app)
     song_attributes = ['genre', 'language', 'year', 'favorite_artists', 'hints']
 

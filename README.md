@@ -50,7 +50,7 @@ flowchart TD
 4. Setup `client_secrets.json` to access the Youtube API.
 5. Run python script
    ```
-   python main.py
+   uv run python main.py
    ```
 
 # DEBUGGING
@@ -60,12 +60,12 @@ To inspect the use `preview_recommendations.py` script
 
 Usage:
 
-    python preview_recommendations.py <file_path>
+    uv run src/python preview_recommendations.py <file_path>
 
 Examples:
 
-    python preview_recommendations.py model_outputs/2024_01_15_10_30_45/anthropic_response.json
-    python preview_recommendations.py model_outputs/2024_01_15_10_30_45/final_recommendations_df.csv
+    uv run python src/preview_recommendations.py model_outputs/2024_01_15_10_30_45/anthropic_response.json
+    uv run python src/preview_recommendations.py model_outputs/2024_01_15_10_30_45/final_recommendations_df.csv
 
 # TODO
 1. Use search tools instead of creating some random titles
