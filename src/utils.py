@@ -1,9 +1,11 @@
+import json
+import logging
 import os
-from src.prompts import VALIDATION_PROMPTS
+
 from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage, SystemMessage
-import logging
-import json
+
+from src.prompts import VALIDATION_PROMPTS
 
 
 def generate_graph_image(app):

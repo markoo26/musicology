@@ -52,5 +52,20 @@ flowchart TD
    ```
    python main.py
    ```
+
+# DEBUGGING
+
+After each run the intermediate recommendation files are stored in `model_outputs/{current_time}` folder.
+To inspect the use `preview_recommendations.py` script 
+
+Usage:
+
+    python preview_recommendations.py <file_path>
+
+Examples:
+
+    python preview_recommendations.py model_outputs/2024_01_15_10_30_45/anthropic_response.json
+    python preview_recommendations.py model_outputs/2024_01_15_10_30_45/final_recommendations_df.csv
+
 # TODO
 1. Use search tools instead of creating some random titles

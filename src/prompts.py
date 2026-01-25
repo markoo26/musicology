@@ -5,15 +5,15 @@ Based on the criteria provided by the user like:
 * year or year range of publication,
 * favorite or related artists, 
 * hints - keywords that help the AI like subgenre, style within genre etc. 
-Recommend 20 songs. Rank them by your estimation how well a song or album can fit to the needs of the user.
-Return JSON object with key being points (20 for the strongest, 1 for the weakest recommendation).
+Recommend {NO_OF_SONGS} songs. Rank them by your estimation how well a song or album can fit to the needs of the user.
+Return JSON object with key being points ({NO_OF_SONGS} for the strongest, 1 for the weakest recommendation).
 Please make sure the songs really exist, for example: 
 - Justin Timberlake - Cry Me A River - is correct, because Justin Timberlake recorded a song Cry Me a River,
 - Justin Timberlake - Crazy in Love - is incorrect, because Crazy in Love was recorded by Beyonce,   
 - Jubstin Timberbake - Mazy in Hove - is incorrect, because neither artist, nor the song exist
 """
 
-# Define validation prompts for each attribute
+
 VALIDATION_PROMPTS = {
     'genre': """You are a helpful input data validator for music genres. 
     Please verify if the user's entry is a valid music genre or style (e.g., rock, pop, jazz, electronic, indie, etc.).

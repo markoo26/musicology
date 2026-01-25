@@ -1,19 +1,8 @@
-# !/usr/bin/env python3
-"""
-Script to preview recommendation files (JSON or CSV)
-
-Usage:
-    python preview_recommendations.py <file_path>
-
-Examples:
-    python preview_recommendations.py model_outputs/anthropic_response_2024_01_15_10_30_45.json
-    python preview_recommendations.py final_recommendations_df_2024_01_15_10_30_45.csv
-"""
-
-import sys
 import json
-import pandas as pd
+import sys
 from pathlib import Path
+
+import pandas as pd
 
 
 def preview_json(file_path: str) -> None:
