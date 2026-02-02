@@ -3,9 +3,13 @@ import logging
 import os
 import pickle
 
+import pandas as pd
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
+
+from src.schemas import State
+from src.utils import create_playlist_name
 
 SCOPES = ['https://www.googleapis.com/auth/youtube.force-ssl']
 
@@ -175,3 +179,32 @@ class YouTubePlaylistCreator:
                 print(f"  - {song}")
 
         return playlist_id
+
+def analyze_responses(state: State, current_time: str) -> dict:
+    """Prepare context for Google to analyze"""
+    recommendations_df = pd.DataFrame()
+    for model in ['anthropic', 'openai', 'google']:
+        single_recommendation_df = pd.DataFrame(state[f'{model}_response']['recommendations'])
+        single_recommendation_df['model'] = model
+        recommendations_df = pd.concat([recommendations_df, single_recommendation_df])
+
+    final_recommendations_df = recommendations_df.groupby(['song_title', 'artist', 'album', 'year'])['rank'].sum().reset_index()
+    final_recommendations_df.columns = ['song_title', 'artist', 'album', 'year', 'total_points']
+    final_recommendations_df = final_recommendations_df.sort_values(by='total_points', ascending=False)
+
+    final_recommendations_df.to_csv(f'model_outputs/{current_time}/final_recommendations_df_{current_time}.csv')
+
+    # Create YouTube playlist
+
+    youtube_creator = YouTubePlaylistCreator()
+    playlist_id = youtube_creator.create_playlist_from_dataframe(
+        df=final_recommendations_df.head(20),  # Top 10 recommendations
+        playlist_name=create_playlist_name(state['user_question']),
+        song_col='song_title',
+        artist_col='artist'
+    )
+
+    return {
+        'final_recommendations': final_recommendations_df.to_dict(),
+        'playlist_id': playlist_id
+    }

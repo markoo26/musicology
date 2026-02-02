@@ -1,0 +1,10 @@
+{
+  "$schema": "https://langgra.ph/schema.json",
+  "dependencies": ["."],
+  "graphs": {
+    "prompt_builder": "./prompt_builder.py:graph",
+    "recommendation": "./recommendation.py:graph"
+  },
+  "env": ".env",
+  "image_distro": "wolfi"
+}

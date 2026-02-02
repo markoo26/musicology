@@ -6,7 +6,7 @@ from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from src.prompts import VALIDATION_PROMPTS
-
+from src.schemas import RecommendationResponse, State
 
 def generate_graph_image(app):
     try:
@@ -38,7 +38,7 @@ def count_tokens(model_provider, response):
     return input_tokens, output_tokens
 
 def validate_apikeys():
-    for apikey in ['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'GOOGLE_API_KEY']:
+    for apikey in ['OPENAI_API_KEY', 'ANTHROPIC_API_KEY', 'GOOGLE_API_KEY', 'SPOTIPY_CLIENT_ID', 'SPOTIPY_CLIENT_SECRET']:
         if not os.getenv(apikey):
             raise ValueError(f"{apikey} not found in environment variables")
 
@@ -48,7 +48,7 @@ def validate_user_input(attribute: str, user_input: str) -> bool:
     Use GPT-4o-mini to validate user input for a given attribute.
     Returns True if valid, False otherwise.
     """
-
+    #TODO: Enable choice of the validator model
     # Separate tiny, cheap and fast model to validate user inputs.
     llm_validator = init_chat_model(model="openai:gpt-4o-mini", temperature=0.0)
     validation_prompt = VALIDATION_PROMPTS.get(attribute)
@@ -112,3 +112,52 @@ def load_config(file_path="config.json"):
     with open(file_path, "r") as f:
         config = json.load(f)
     return config
+
+
+# Get response from any model
+def get_model_response(state: State, model_provider, current_time, models, script_config) -> dict:
+    """Get response with same System Message to specific Human Message for given Model Provider"""
+
+    messages = [
+        SystemMessage(content=RECOMMENDATION_PROMPT.format(NO_OF_SONGS=script_config['NO_OF_SONGS'])),
+        HumanMessage(content=state["user_question"])
+    ]
+
+    if model_provider == "openai":
+        # Use function calling method for OpenAI
+        structured_llm = models[model_provider].with_structured_output(
+            RecommendationResponse,
+            method="function_calling"
+        )
+    else:
+        structured_llm = models[model_provider].with_structured_output(RecommendationResponse)
+
+    response = structured_llm.invoke(messages)
+    #TODO: Fix this guy
+    tool_calls = response.additional_kwargs.get("tool_calls", [])
+
+    if tool_calls:
+        print("✅ Search tool was used")
+        for call in tool_calls:
+            print(call["name"], call["args"])
+    else:
+        print("❌ Search tool was NOT used")
+
+    # Generate timestamp and filename and model_outputs folder if not present
+
+    output_dir = Path(__file__).parent / "model_outputs" / current_time
+
+    output_dir.mkdir(exist_ok=True)
+
+    filename = Path(__file__).parent / f"model_outputs/{current_time}/{model_provider}_response.json"
+
+    # Dump response to JSON file
+    response_dict = response.model_dump()
+
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(response_dict, f, indent=2, ensure_ascii=False)
+
+    logging.info(f"{model_provider} response saved to {filename}")
+
+    return {f"{model_provider}_response": response.model_dump()}
+

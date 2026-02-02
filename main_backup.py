@@ -111,6 +111,10 @@ def analyze_responses(state: State, current_time: str) -> dict:
         'playlist_id': playlist_id
     }
 
+# Node 3: Human feedback
+    def human_feedback(state: MessagesState):
+        pass
+
 
 # Build the graph
 def build_graph(MODELS, CONFIG):
@@ -125,6 +129,7 @@ def build_graph(MODELS, CONFIG):
     workflow.add_node("google", partial(get_model_response, model_provider="google", current_time=current_time, models=MODELS, script_config=CONFIG))
     workflow.add_node("analyze", partial(analyze_responses, current_time=current_time))
 
+    workflow.add_node("human_feedback", human_feedback)
     # Add edges - all models run from START
     workflow.add_edge(START, "anthropic")
     workflow.add_edge(START, "openai")

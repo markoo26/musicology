@@ -2,8 +2,9 @@ from typing import Annotated, Dict
 from typing import List
 
 from langgraph.graph.message import add_messages
-from pydantic import BaseModel, Field
 from typing_extensions import TypedDict
+
+from pydantic import BaseModel, Field
 
 
 class MusicRecommendation(BaseModel):
@@ -29,3 +30,14 @@ class State(TypedDict):
     google_response: str
     final_answer: str
     prompt_attributes: Dict[str, str]
+
+
+class SongRecommendationState(TypedDict):
+    current_attribute_index: int
+    attributes_to_collect: list[str]
+    prompt_attributes: dict[str, str]
+    current_user_input: str
+    validation_attempts: int
+    validation_error: str | None
+    final_prompt: str
+    max_attempts: int
