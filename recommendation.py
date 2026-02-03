@@ -36,6 +36,13 @@ MODELS = {m: init_chat_model(model=f"{m}:{CONFIG[f'{m.upper()}_MODEL']}",
                              temperature=CONFIG["TEMPERATURE"]).bind_tools(tools, tool_choice="web_search")
           for m in ['anthropic', 'google_genai', 'openai']}
 
+def map_prompt_to_question(subgraph_output):
+    """Map PromptBuilderState output to main State"""
+    return {
+        "user_question": subgraph_output.get("final_prompt", ""),
+        "prompt_attributes": subgraph_output.get("prompt_attributes", {})
+    }
+
 # Build the main graph
 graph = StateGraph(State)
 
@@ -43,7 +50,7 @@ graph = StateGraph(State)
 current_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
 
 # Add nodes
-graph.add_node("prompt_builder", prompt_builder_graph)  # Add as subgraph
+graph.add_node("prompt_builder", prompt_builder_graph, output=map_prompt_to_question)
 graph.add_node("anthropic",
                partial(get_model_response, model_provider="anthropic", current_time=current_time, models=MODELS,
                        script_config=CONFIG))
@@ -70,19 +77,3 @@ graph.add_edge("google", "analyze")
 graph.add_edge("analyze", END)
 
 app = graph.compile()
-
-# OLD CODE:
-# Initialize models
-# llm_anthropic = init_chat_model(model=f"anthropic:{CONFIG['ANTHROPIC_MODEL']}", temperature=CONFIG["TEMPERATURE"])
-# llm_openai = init_chat_model(model=f"openai:{CONFIG['OPENAI_MODEL']}", temperature=CONFIG["TEMPERATURE"])
-# llm_google = init_chat_model(model=f"google_genai:{CONFIG['GOOGLE_MODEL']}", temperature=CONFIG["TEMPERATURE"])
-
-# llm_openai.bind_tools(tools, tool_choice="web_search")
-# llm_anthropic.bind_tools(tools, tool_choice="web_search")
-# llm_google.bind_tools(tools, tool_choice="web_search")
-
-# MODELS = {'anthropic': llm_anthropic, 'openai': llm_openai, 'google': llm_google}
-
-# Node 3: Human feedback
-# def human_feedback(state: MessagesState):
-#     pass

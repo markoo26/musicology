@@ -6,6 +6,6 @@
   "OPENAI_MODEL": "gpt-4o",
   "GOOGLE_GENAI_MODEL": "gemini-pro-latest",
   "PROMPT_VALIDATOR_MODEL": "openai:gpt-4o-mini",
-  "SONG_ATTRIBUTES": ["genre", "language", "year", "favorite_artists", "hints"],
+  "SONG_ATTRIBUTES": ["genre", "language", "year", "favorite_artists", "hints", "mode"],
   "MAX_ATTEMPTS": 3
 }

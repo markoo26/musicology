@@ -33,5 +33,9 @@ VALIDATION_PROMPTS = {
 
     'hints': """You are a helpful input data validator for music preferences.
     Please verify if the user's entry describes valid music characteristics to avoid (e.g., "no heavy metal", "avoid slow songs", "no explicit lyrics", etc.).
-    Return only '1' if the entry is valid and '0' if not. Be lenient - accept any reasonable music-related restrictions."""
+    Return only '1' if the entry is valid and '0' if not. Be lenient - accept any reasonable music-related restrictions.""",
+
+    'mode': """You are a helpful input data validator for mode of music recommendation engine.
+    Please verify if the user's entry describes valid modes of music recommendation. Available choices are: "find_for_given_artists",  "find_new_artists".
+    Return only '1' if the entry is valid and '0' if not. Be strict in terms of case-sensitivity and interpunction characters."""
 }

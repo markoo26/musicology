@@ -23,14 +23,19 @@ class RecommendationResponse(BaseModel):
 
 
 class State(TypedDict):
-    messages: Annotated[list, add_messages]
-    user_question: str
-    anthropic_response: str
-    openai_response: str
-    google_response: str
-    final_answer: str
-    prompt_attributes: Dict[str, str]
-
+    messages: Annotated[list, add_messages] = Field(default = [])
+    user_question: str = Field(default = '')
+    anthropic_response: str = Field(default = '')
+    openai_response: str = Field(default = '')
+    google_response: str = Field(default = '')
+    final_answer: str = Field(default = '')
+    prompt_attributes: Dict[str, str] = Field(default = '')
+    current_attribute_index: int = Field(default=0)
+    attributes_to_collect: list[str]
+    validation_attempts: int = Field(default=0)
+    final_prompt: str = Field(default="")
+    max_attempts: int
+    is_complete: bool = Field(default=False)
 
 class SongRecommendationState(TypedDict):
     current_attribute_index: int
