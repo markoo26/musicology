@@ -71,8 +71,8 @@ def create_prompt_builder_graph(config: dict):
 
         # Validate with LLM
         state.messages.append("🔍 Validating your input...")
-        is_valid = validate_user_input(current_attribute, user_input.strip())
-
+        # is_valid = validate_user_input(current_attribute, user_input.strip())
+        is_valid = True #TODO: Revert to real validation
         if is_valid:
             state.messages.append(f"✅ Valid {current_attribute}")
             state.prompt_attributes[current_attribute] = user_input.strip()

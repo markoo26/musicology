@@ -122,7 +122,6 @@ def load_config(file_path="config.json"):
 def get_model_response(state, model_provider, current_time, models, script_config) -> dict:
     """Get response with same System Message to specific Human Message for given Model Provider"""
 
-    breakpoint()
     messages = [
         SystemMessage(content=RECOMMENDATION_PROMPT.format(NO_OF_SONGS=script_config['NO_OF_SONGS'])),
         HumanMessage(content=state["final_prompt"])
@@ -139,22 +138,21 @@ def get_model_response(state, model_provider, current_time, models, script_confi
 
     response = structured_llm.invoke(messages)
     # TODO: Fix this guy
-    tool_calls = response.additional_kwargs.get("tool_calls", [])
+    # tool_calls = response.additional_kwargs.get("tool_calls", [])
 
-    if tool_calls:
-        print("✅ Search tool was used")
-        for call in tool_calls:
-            print(call["name"], call["args"])
-    else:
-        print("❌ Search tool was NOT used")
+    # if tool_calls:
+    #     print("✅ Search tool was used")
+    #     for call in tool_calls:
+    #         print(call["name"], call["args"])
+    # else:
+    #     print("❌ Search tool was NOT used")
 
     # Generate timestamp and filename and model_outputs folder if not present
 
-    output_dir = Path(__file__).parent / "model_outputs" / current_time
-
+    output_dir = Path(__file__).parent.parent / "model_outputs" / current_time
     output_dir.mkdir(exist_ok=True)
 
-    filename = Path(__file__).parent / f"model_outputs/{current_time}/{model_provider}_response.json"
+    filename = output_dir / "model_provider_response.json"
 
     # Dump response to JSON file
     response_dict = response.model_dump()

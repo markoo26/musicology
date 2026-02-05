@@ -56,7 +56,7 @@ graph.add_node("anthropic",
                        script_config=CONFIG))
 graph.add_node("openai", partial(get_model_response, model_provider="openai", current_time=current_time, models=MODELS,
                                  script_config=CONFIG))
-graph.add_node("google", partial(get_model_response, model_provider="google", current_time=current_time, models=MODELS,
+graph.add_node("google", partial(get_model_response, model_provider="google_genai", current_time=current_time, models=MODELS,
                                  script_config=CONFIG))
 graph.add_node("analyze", partial(analyze_responses, current_time=current_time))
 

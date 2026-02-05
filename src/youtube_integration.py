@@ -183,7 +183,7 @@ class YouTubePlaylistCreator:
 def analyze_responses(state: State, current_time: str) -> dict:
     """Prepare context for Google to analyze"""
     recommendations_df = pd.DataFrame()
-    for model in ['anthropic', 'openai', 'google']:
+    for model in ['anthropic', 'openai', 'google_genai']:
         single_recommendation_df = pd.DataFrame(state[f'{model}_response']['recommendations'])
         single_recommendation_df['model'] = model
         recommendations_df = pd.concat([recommendations_df, single_recommendation_df])

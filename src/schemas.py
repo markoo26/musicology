@@ -2,7 +2,7 @@ from typing import Annotated, Dict
 from typing import List
 
 from langgraph.graph.message import add_messages
-from typing_extensions import TypedDict
+from typing_extensions import TypedDict, NotRequired
 
 from pydantic import BaseModel, Field
 
@@ -23,19 +23,28 @@ class RecommendationResponse(BaseModel):
 
 
 class State(TypedDict):
-    messages: Annotated[list, add_messages] = Field(default = [])
-    user_question: str = Field(default = '')
-    anthropic_response: str = Field(default = '')
-    openai_response: str = Field(default = '')
-    google_response: str = Field(default = '')
-    final_answer: str = Field(default = '')
-    prompt_attributes: Dict[str, str] = Field(default = '')
-    current_attribute_index: int = Field(default=0)
-    attributes_to_collect: list[str]
-    validation_attempts: int = Field(default=0)
-    final_prompt: str = Field(default="")
+    # LangGraph reducer field
+    messages: Annotated[List, add_messages]
+
+    # Core inputs / outputs
+    user_question: NotRequired[str]
+    final_prompt: NotRequired[str]
+    final_answer: NotRequired[str]
+
+    # Model responses
+    anthropic_response: NotRequired[str]
+    openai_response: NotRequired[str]
+    google_genai_response: NotRequired[str] #TODO: See if it's fixed now
+
+    # Prompt-building state
+    prompt_attributes: NotRequired[Dict[str, str]]
+    attributes_to_collect: List[str]
+    current_attribute_index: NotRequired[int]
+
+    # Control / validation
+    validation_attempts: NotRequired[int]
     max_attempts: int
-    is_complete: bool = Field(default=False)
+    is_complete: NotRequired[bool]
 
 class SongRecommendationState(TypedDict):
     current_attribute_index: int
